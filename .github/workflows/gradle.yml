@@ -3,12 +3,10 @@ name: Java CI
 on:
   push:
     paths-ignore:
-      - 'docs/**'
-      - 'config/**'
+      - 'config/**'  # Ignore changes in 'config' directory
   pull_request:
     paths-ignore:
-      - 'docs/**'
-      - 'config/**'
+      - 'config/**'  # Ignore changes in 'config' directory
 
 jobs:
   build:
@@ -31,7 +29,7 @@ jobs:
 
       - name: Run repository-wide tests
         if: runner.os == 'Linux'
-        working-directory:  ${{ github.workspace }}/.github
+        working-directory: ${{ github.workspace }}/.github
         run: ./run-checks.sh
 
       - name: Validate Gradle Wrapper
@@ -51,3 +49,9 @@ jobs:
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      # Add a step to run ./run-checks.sh specifically for changes in the 'docs' directory
+      - name: Run checks for 'docs'
+        if: ${{ github.event_name == 'push' && contains(github.event.commits.*.added, 'docs/') || contains(github.event.commits.*.modified, 'docs/') }}
+        working-directory: ${{ github.workspace }}
+        run: ./run-checks.sh
